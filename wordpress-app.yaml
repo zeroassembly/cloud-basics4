@@ -33,23 +33,22 @@ Parameters:
     MinLength: '1'
     Type: String
   DBPassword:
-    AllowedPattern: '[a-zA-Z0-9]+'
+    #AllowedPattern: '[a-zA-Z0-9]+'
     ConstraintDescription: must contain only alphanumeric characters.
     Description: The WordPress database admin account password
-    MaxLength: '41'
     MinLength: '8'
     NoEcho: 'true'
-    Type: String
-    Default: "{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}" #update your password string here
+    Type: AWS::SecretsManager::Secret
+    Default: '{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}' #update your password string here
   DBRootPassword:
-    AllowedPattern: '[a-zA-Z0-9]+'
+    #AllowedPattern: '[a-zA-Z0-9]+'
     ConstraintDescription: must contain only alphanumeric characters.
     Description: MySQL root password
-    MaxLength: '41'
+    #MaxLength: '41'
     MinLength: '8'
     NoEcho: 'true'
-    Type: String
-    Default: "{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}" #update your password string here
+    Type: AWS::SecretsManager::Secret
+    Default: '{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}' #update your password string here
   DBUser:
     AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
     ConstraintDescription: must begin with a letter and contain only alphanumeric
