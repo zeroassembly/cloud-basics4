@@ -40,7 +40,7 @@ Parameters:
     MinLength: '8'
     NoEcho: 'true'
     Type: String
-    Default: '{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}' #update your password string here
+    Default: "{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}" #update your password string here
   DBRootPassword:
     AllowedPattern: '[a-zA-Z0-9]+'
     ConstraintDescription: must contain only alphanumeric characters.
@@ -49,7 +49,7 @@ Parameters:
     MinLength: '8'
     NoEcho: 'true'
     Type: String
-    Default: '{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}' #update your password string here
+    Default: "{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}" #update your password string here
   DBUser:
     AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
     ConstraintDescription: must begin with a letter and contain only alphanumeric
