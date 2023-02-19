@@ -239,7 +239,6 @@ Resources:
           - configure_wordpress
         configure_wordpress:
           env:
-            DBPassword: "{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}"
             DBRootPassword: "{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}"
           commands:
             01_set_mysql_root_password:
@@ -283,6 +282,8 @@ Resources:
                 - /etc/cfn/cfn-hup.conf
                 - /etc/cfn/hooks.d/cfn-auto-reloader.conf
         install_wordpress:
+          env:
+            DBPassword: "{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}"
           files:
             /tmp/create-wp-config:
               content: !Sub |
