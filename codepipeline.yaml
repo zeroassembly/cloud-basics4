@@ -122,6 +122,7 @@ Resources:
                 - cloudformation.amazonaws.com
                 - ec2.amazonaws.com
                 - s3.amazonaws.com
+                - secretsmanager.amazonaws.com
           - Action: "*"
             Resource: "*"
             Effect: Allow
