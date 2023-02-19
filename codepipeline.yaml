@@ -1,0 +1,144 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: github-codepipeline
+
+Parameters:
+
+
+  GitHubOwner:
+    Type: String
+    Default: shrestha-ajay #replace with your github username
+    AllowedPattern: "[A-Za-z0-9-]+"
+
+  RepositoryName:
+    Type: String
+    Default: cloud-basics4 #replace with your github repository name
+    AllowedPattern: "[A-Za-z0-9-]+"
+
+  BranchName:
+    Type: String
+    Default: main
+    AllowedPattern: "[A-Za-z0-9-]+"
+
+  ApplicationStackName:
+    Type: String
+    Default: codepipeline-github-app
+    AllowedPattern: "[A-Za-z0-9-]+"
+
+
+Resources:
+  
+  PipelineArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      VersioningConfiguration:
+        Status: Enabled
+
+  AppPipeline: 
+    Type: AWS::CodePipeline::Pipeline
+    Properties: 
+      Name: github-polling-pipeline
+      ArtifactStore:
+        Type: S3
+        Location: !Ref PipelineArtifactsBucket
+      RoleArn: 
+        !GetAtt CodePipelineRole.Arn
+      Stages: 
+        - Name: Source
+          Actions: 
+            - Name: SourceAction
+              ActionTypeId: 
+                Category: Source
+                Owner: ThirdParty
+                Version: 1
+                Provider: GitHub
+              OutputArtifacts: 
+                - Name: AppSourceCode
+              Configuration: 
+                Owner: !Ref GitHubOwner
+                Repo: !Ref RepositoryName
+                Branch: !Ref BranchName
+                OAuthToken: '{{resolve:secretsmanager:github-oauth-token:SecretString}}'               
+                PollForSourceChanges: false
+              RunOrder: 1      
+        - Name: Deploy
+          Actions:
+            - Name: CloudFormationDeploy
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: '1'
+              InputArtifacts:
+                - Name: AppSourceCode
+              Configuration:
+                ActionMode: CREATE_UPDATE
+                Capabilities: CAPABILITY_IAM
+                RoleArn: !GetAtt CloudformationRole.Arn
+                StackName: !Ref ApplicationStackName
+                TemplatePath: !Sub "AppSourceCode::wordpress-app.yaml"
+              RunOrder: 1
+
+  AppPipelineWebhook:
+    Type: 'AWS::CodePipeline::Webhook'
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: '{{resolve:secretsmanager:github-oauth-token:SecretString}}'
+      Filters:
+        - 
+          JsonPath: "$.ref"
+          MatchEquals: refs/heads/{Branch}
+      TargetPipeline: !Ref AppPipeline
+      TargetAction: SourceAction
+      Name: AppPipelineWebhook
+      TargetPipelineVersion: !GetAtt AppPipeline.Version
+      RegisterWithThirdParty: true
+
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: codepipeline.amazonaws.com
+          Action: sts:AssumeRole
+
+  CodePipelineServiceRolePolicy:
+    Type: AWS::IAM::Policy
+    Properties: 
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action:
+            - iam:PassRole
+            Resource: "*"
+            Effect: Allow
+            Condition:
+              StringEqualsIfExists:
+                iam:PassedToService:
+                - cloudformation.amazonaws.com
+                - ec2.amazonaws.com
+                - s3.amazonaws.com
+          - Action: "*"
+            Resource: "*"
+            Effect: Allow
+      PolicyName: CodePipelineServiceRolePolicy
+      Roles: 
+        - !Ref CodePipelineRole
+
+
+  CloudformationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: cloudformation.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
