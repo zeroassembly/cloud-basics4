@@ -25,7 +25,8 @@ Description: 'AWS CloudFormation Sample Template WordPress_Single_Instance: Word
 Parameters:
   DBName:
     AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
-    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+    ConstraintDescription: must begin with a letter and contain only alphanumeric
+      characters.
     Default: wordpressdb
     Description: The WordPress database name
     MaxLength: '64'
@@ -33,7 +34,8 @@ Parameters:
     Type: String
   DBUser:
     AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
-    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+    ConstraintDescription: must begin with a letter and contain only alphanumeric
+      characters.
     Default: DBUser
     Description: The WordPress database admin account username
     MaxLength: '16'
@@ -223,7 +225,6 @@ Mappings:
       HVM64: ami-f0091d91
       HVMG2: ami-315f4850
 Resources:
-  
   WebServer:
     Type: AWS::EC2::Instance
     CreationPolicy:
@@ -237,17 +238,20 @@ Resources:
           - install_wordpress
           - configure_wordpress
         configure_wordpress:
+          env:
+            DBPassword: "{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}"
+            DBRootPassword: "{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}"
           commands:
             01_set_mysql_root_password:
               command: !Sub |
-                mysqladmin -u root password '{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}'
+                mysqladmin -u root password '$DBRootPassword'
               test: !Sub |
-                $(mysql ${DBName} -u root --password='{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}' >/dev/null 2>&1 </dev/null); (( $? != 0 ))
+                $(mysql ${DBName} -u root --password='$DBRootPassword' >/dev/null 2>&1 </dev/null); (( $? != 0 ))
             02_create_database:
               command: !Sub |
-                mysql -u root --password='{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}' < /tmp/setup.mysql
+                mysql -u root --password='$DBRootPassword' < /tmp/setup.mysql
               test: !Sub |
-                $(mysql ${DBName} -u root --password='{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}' >/dev/null 2>&1 </dev/null); (( $? !=0))
+                $(mysql ${DBName} -u root --password='$DBRootPassword' >/dev/null 2>&1 </dev/null); (( $? !=0))
             03_configure_wordpress:
               command: /tmp/create-wp-config
               cwd: /var/www/html/wordpress
@@ -286,14 +290,14 @@ Resources:
                 cp /var/www/html/wordpress/wp-config-sample.php /var/www/html/wordpress/wp-config.php
                 sed -i "s/'database_name_here'/'${DBName}'/g" wp-config.php
                 sed -i "s/'username_here'/'${DBUser}'/g" wp-config.php
-                sed -i "s/'password_here'/'{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}'/g" wp-config.php
+                sed -i "s/'password_here'/'$DBPassword'/g" wp-config.php
               group: root
               mode: '000500'
               owner: root
             /tmp/setup.mysql:
               content: !Sub |
                 CREATE DATABASE ${DBName};
-                CREATE USER '${DBUser}'@'localhost' IDENTIFIED BY '{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}';
+                CREATE USER '${DBUser}'@'localhost' IDENTIFIED BY '$DBPassword';
                 GRANT ALL ON ${DBName}.* TO '${DBUser}'@'localhost';
                 FLUSH PRIVILEGES;
               group: root
