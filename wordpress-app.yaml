@@ -288,7 +288,6 @@ Resources:
               content: !Sub |
                 #!/bin/bash -xe
                 cp /var/www/html/wordpress/wp-config-sample.php /var/www/html/wordpress/wp-config.php
-                DBPassword="{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}"
                 sed -i "s/'database_name_here'/'${DBName}'/g" wp-config.php
                 sed -i "s/'username_here'/'${DBUser}'/g" wp-config.php
                 sed -i "s/'password_here'/'$DBPassword'/g" wp-config.php
@@ -348,6 +347,8 @@ Resources:
            yum update -y aws-cfn-bootstrap
            /opt/aws/bin/cfn-init -v --stack ${AWS::StackId} --resource WebServer --configsets wordpress_install --region ${AWS::Region}
            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource WebServer --region ${AWS::Region}
+           DBPassword="{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}"
+           DBRootPassword="{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}"
   WebServerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
