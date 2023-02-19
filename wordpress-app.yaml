@@ -39,7 +39,7 @@ Parameters:
     MinLength: '8'
     NoEcho: 'true'
     Type: AWS::SecretsManager::Secret
-    Default: "{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}" #update your password string here
+    Default: '{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}' #update your password string here
   DBRootPassword:
     #AllowedPattern: '[a-zA-Z0-9]+'
     ConstraintDescription: must contain only alphanumeric characters.
@@ -48,7 +48,7 @@ Parameters:
     MinLength: '8'
     NoEcho: 'true'
     Type: AWS::SecretsManager::Secret
-    Default: "{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}" #update your password string here
+    Default: '{{resolve:secretsmanager:wordpress-lab-db-password:SecretString}}' #update your password string here
   DBUser:
     AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
     ConstraintDescription: must begin with a letter and contain only alphanumeric
@@ -103,7 +103,7 @@ Parameters:
     - cr1.8xlarge
     - cc2.8xlarge
     ConstraintDescription: must be a valid EC2 instance type.
-    Default: t2.nano
+    Default: t2.micro
     Description: WebServer EC2 instance type
     Type: String
   KeyName:
