@@ -37,7 +37,7 @@ Resources:
   AppPipeline: 
     Type: AWS::CodePipeline::Pipeline
     Properties: 
-      Name: github-polling-pipeline
+      Name: github-wordpress-pipeline
       ArtifactStore:
         Type: S3
         Location: !Ref PipelineArtifactsBucket
