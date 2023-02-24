@@ -22,7 +22,7 @@ Parameters:
 
   ApplicationStackName:
     Type: String
-    Default: codepipeline-github-application
+    Default: codepipeline-github-application1
     AllowedPattern: "[A-Za-z0-9-]+"
 
 
