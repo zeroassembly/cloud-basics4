@@ -86,7 +86,7 @@ Parameters:
     - cr1.8xlarge
     - cc2.8xlarge
     ConstraintDescription: must be a valid EC2 instance type.
-    Default: t2.micro
+    Default: t2.small
     Description: WebServer EC2 instance type
     Type: String
   KeyName:
