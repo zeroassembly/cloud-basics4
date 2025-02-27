@@ -22,7 +22,7 @@ Parameters:
 
   ApplicationStackName:
     Type: String
-    Default: codepipeline-github-application1
+    Default: codepipeline-github-application2
     AllowedPattern: "[A-Za-z0-9-]+"
 
 
@@ -86,9 +86,9 @@ Resources:
       AuthenticationConfiguration:
         SecretToken: '{{resolve:secretsmanager:github-oauth-token:SecretString}}'
       Filters:
-        - 
-          JsonPath: "$.ref"
-          MatchEquals: refs/heads/{Branch}
+        - JsonPath: "$.ref"
+          MatchEquals: !Sub "refs/heads/${BranchName}"
+
       TargetPipeline: !Ref AppPipeline
       TargetAction: SourceAction
       Name: AppPipelineWebhook
@@ -105,30 +105,38 @@ Resources:
           Principal:
             Service: codepipeline.amazonaws.com
           Action: sts:AssumeRole
-
-  CodePipelineServiceRolePolicy:
-    Type: AWS::IAM::Policy
-    Properties: 
-      PolicyDocument:
-        Version: '2012-10-17'
+  
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
         Statement:
-          - Action:
-            - iam:PassRole
-            Resource: "*"
-            Effect: Allow
-            Condition:
-              StringEqualsIfExists:
-                iam:PassedToService:
-                - cloudformation.amazonaws.com
-                - ec2.amazonaws.com
-                - s3.amazonaws.com
-                - secretsmanager.amazonaws.com
-          - Action: "*"
-            Resource: "*"
-            Effect: Allow
-      PolicyName: CodePipelineServiceRolePolicy
-      Roles: 
-        - !Ref CodePipelineRole
+          - Effect: Allow
+            Principal:
+              Service: 
+                - codepipeline.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodePipelineServiceRolePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Action:
+                  - iam:PassRole
+                Resource: "*"
+                Effect: Allow
+                Condition:
+                  StringEqualsIfExists:
+                    iam:PassedToService:
+                      - cloudformation.amazonaws.com
+                      - ec2.amazonaws.com
+                      - s3.amazonaws.com
+                      - secretsmanager.amazonaws.com
+              - Action: "*"
+                Resource: "*"
+                Effect: Allow
+
 
 
   CloudformationRole:
@@ -143,3 +151,6 @@ Resources:
           Action: sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AdministratorAccess
+
+
+
