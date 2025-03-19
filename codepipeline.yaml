@@ -58,7 +58,7 @@ Resources:
                 Owner: !Ref GitHubOwner
                 Repo: !Ref RepositoryName
                 Branch: !Ref BranchName
-                OAuthToken: '{{resolve:secretsmanager:github-oauth-token:SecretString}}'               
+                OAuthToken: '{{resolve:secretsmanager:github-oauth-token-lab7_omg2:SecretString}}'               
                 PollForSourceChanges: false
               RunOrder: 1      
         - Name: Deploy
