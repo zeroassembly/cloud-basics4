@@ -37,7 +37,7 @@ Resources:
       ImageId: ami-085ad6ae776d8f09c
       SecurityGroups:
         - !Ref InstanceSecurityGroup
-      KeyName: key #please-update-with-your-key
+      KeyName: lecture_2_setup_tutorial #please-update-with-your-key
       UserData:
         Fn::Base64: !Sub |
           #!/bin/bash
